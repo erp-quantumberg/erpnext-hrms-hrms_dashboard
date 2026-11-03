@@ -1,102 +1,6 @@
 <template>
   <main class="min-h-screen bg-[#f8f7fc] px-3 py-3 text-[#25213a] sm:px-5 lg:px-8">
 
-    <!-- TOP NAVIGATION -->
-    <header class="mb-4 flex items-center justify-between gap-3">
-      <a href="/app" class="flex items-center gap-2 no-underline">
-        <span
-          class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-r from-[#453D89] to-[#C8499A] text-xl font-black text-white shadow">✦</span>
-        <span>
-          <strong class="block text-base font-black tracking-widest">PEOPLE<span
-              class="text-[#C8499A]">OS</span></strong>
-          <small class="text-[9px] font-bold tracking-widest text-gray-600">HUMAN RESOURCES</small>
-        </span>
-      </a>
-
-      <div class="flex items-center gap-2">
-        <!-- NOTIFICATIONS -->
-        <div class="relative">
-          <button type="button"
-            class="relative grid h-10 w-10 place-items-center rounded-xl border border-[#eeeaf5] bg-white text-xl text-[#453D89] shadow-sm"
-            title="Notifications" aria-label="Notifications" @click="toggleNotifications">
-            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M10 21h4" />
-            </svg>
-            <span v-if="unreadCount > 0"
-              class="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#C8499A] px-1 text-[9px] font-black text-white ring-2 ring-white">
-              {{ unreadCount > 99 ? "99+" : unreadCount }}
-            </span>
-          </button>
-
-          <div v-if="notificationsOpen"
-            class="absolute right-0 top-12 z-50 w-[min(360px,calc(100vw-24px))] overflow-hidden rounded-2xl border border-[#eeeaf5] bg-white shadow-xl">
-
-            <!-- HEADER WITH CLOSE BUTTON -->
-            <div class="flex items-start justify-between gap-3 border-b border-purple-50 p-4">
-              <div>
-                <h3 class="text-sm font-black">Notifications</h3>
-                <p class="mt-1 text-[10px] text-gray-600">{{ unreadCount }} unread</p>
-              </div>
-
-              <div class="flex items-center gap-3">
-                <button class="text-[10px] font-bold text-[#C8499A] disabled:opacity-40" :disabled="!unreadCount"
-                  @click="markAllNotificationsRead">
-                  Mark all read
-                </button>
-                <button type="button"
-                  class="grid h-7 w-7 place-items-center rounded-lg bg-gray-100 text-lg font-bold text-gray-600 hover:bg-red-50 hover:text-red-600"
-                  aria-label="Close notifications" title="Close notifications" @click="notificationsOpen = false">
-                  ×
-                </button>
-              </div>
-            </div>
-
-            <div class="max-h-80 overflow-y-auto">
-              <button v-for="notification in notifications" :key="notification.name"
-                class="flex w-full gap-3 border-b border-purple-50 p-3 text-left hover:bg-purple-50/60"
-                :class="{ 'bg-purple-50/40': !isRead(notification) }" @click="openNotification(notification)">
-                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-purple-50 text-[#453D89]">
-                  {{ isRead(notification) ? "✓" : "●" }}
-                </span>
-                <span class="min-w-0 flex-1">
-                  <strong class="block text-xs font-bold text-gray-800">
-                    {{ notification.subject || "Notification" }}
-                  </strong>
-                  <span class="mt-1 block text-xs leading-5 text-gray-500">
-                    {{ notificationMessage(notification) }}
-                  </span>
-                  <span class="mt-1 block text-[9px] text-gray-600">
-                    {{ formatDateTime(notification.creation) }}
-                  </span>
-                </span>
-                <span v-if="!isRead(notification)" class="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#C8499A]"></span>
-              </button>
-
-              <div v-if="!notifications.length && !notificationsLoading" class="p-6 text-center">
-                <span class="text-2xl text-[#453D89]">✓</span>
-                <p class="mt-2 text-xs font-bold text-gray-600">You're all caught up</p>
-                <p class="mt-1 text-[10px] text-gray-600">New notifications will appear here.</p>
-              </div>
-
-              <div v-if="notificationsLoading" class="p-5 text-center text-xs text-gray-600">
-                Loading notifications...
-              </div>
-            </div>
-
-            <div class="border-t border-purple-50 p-3">
-              <button
-                class="w-full rounded-lg bg-gradient-to-r from-[#453D89] to-[#C8499A] px-3 py-2.5 text-xs font-bold text-white"
-                @click="loadNotifications">
-                Refresh notifications
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-
     <!-- HERO -->
     <section
       class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#453D89] to-[#C8499A] p-5 text-white shadow-md sm:p-6">
@@ -110,12 +14,12 @@
           </span>
 
           <h1 class="mt-3 text-2xl font-black leading-tight sm:text-3xl">
-            {{ heroTitle }} <span class="text-[#FFD8EF]">{{ heroSubtitle }}</span>
+            Good {{ greeting }} <span class="text-[#FFD8EF]">{{ displayName }}</span>
           </h1>
 
-          <p class="mt-2 max-w-xl text-xs leading-5 text-white/80 sm:text-sm">
-            Good {{ greeting }}, {{ displayName }}. {{ heroDescription }}
-          </p>
+          <!-- <p class="mt-2 max-w-xl text-xs leading-5 text-white/80 sm:text-sm">
+            Good {{ greeting }}, {{ displayName }}.
+          </p> -->
 
           <div class="mt-4 flex flex-wrap gap-2">
             <button class="rounded-lg bg-white px-4 py-2.5 text-xs font-extrabold text-[#453D89]"
@@ -206,7 +110,7 @@
         <button
           class="h-9 whitespace-nowrap rounded-lg bg-gradient-to-r from-[#453D89] to-[#C8499A] px-4 text-xs font-bold text-white disabled:opacity-50"
           :disabled="dateLoading || loading" @click="applyDateFilter">
-          {{ dateLoading ? "Applying..." : "Apply Filter" }}
+          {{ dateLoading ? "Applying..." : "Apply" }}
         </button>
 
         <!-- Reset -->
@@ -443,9 +347,9 @@
         <!-- HOLIDAYS -->
         <article class="rounded-xl border border-[#eeeaf5] bg-white p-4 shadow-sm">
           <CardHeading icon="♧" title="Holidays" link-label="View ↗" @open="openRoute('/app/holiday-list')" />
-          <p class="mt-3 text-[10px] text-gray-600">Holidays within selected dates</p>
+          <p class="mt-3 text-[10px] text-gray-600">Next 5 upcoming holidays</p>
           <div v-if="holidays.length" class="mt-2 divide-y divide-purple-50">
-            <div v-for="holiday in holidays.slice(0, 6)" :key="holiday.holiday_date + holiday.description"
+            <div v-for="holiday in holidays" :key="holiday.holiday_date + holiday.description"
               class="flex items-center gap-3 py-2">
               <div
                 class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-purple-50 text-xs font-black text-[#453D89]">
@@ -458,7 +362,7 @@
               </div>
             </div>
           </div>
-          <p v-else class="mt-3 text-xs text-gray-600">No holidays in this date range.</p>
+          <p v-else class="mt-3 text-xs text-gray-600">No upcoming holidays.</p>
         </article>
       </section>
     </template>
@@ -509,7 +413,7 @@
             class="min-w-0 rounded-xl border border-[#eeeaf5] bg-white p-4 text-left shadow-sm"
             @click="openRoute(metric.route)">
             <span class="grid h-9 w-9 place-items-center rounded-lg text-lg" :class="metric.color">{{ metric.icon
-              }}</span>
+            }}</span>
             <span class="mt-3 block text-[10px] font-semibold text-gray-600">{{ metric.label }}</span>
             <strong class="mt-1 block break-words text-xl font-black">{{ metric.value }}</strong>
             <small class="mt-1 block text-[10px] text-[#453D89]">{{ metric.note }}</small>
@@ -529,9 +433,9 @@
           </div>
           <div class="mt-4 space-y-3">
             <div class="flex items-center justify-between text-xs"><span>Present</span><strong>{{ metrics.present
-                }}</strong></div>
+            }}</strong></div>
             <div class="flex items-center justify-between text-xs"><span>Absent</span><strong>{{ metrics.absent
-                }}</strong></div>
+            }}</strong></div>
             <div class="flex items-center justify-between text-xs"><span>Other attendance records</span><strong>{{
               Math.max(0, metrics.attendanceRecords - metrics.present - metrics.absent) }}</strong></div>
           </div>
@@ -613,7 +517,7 @@
               class="flex items-center justify-between gap-3 py-2">
               <div class="min-w-0">
                 <strong class="block truncate text-xs">{{ leave.employee_name || leave.employee || "Employee"
-                  }}</strong>
+                }}</strong>
                 <p class="mt-1 text-[10px] text-gray-600">{{ leave.leave_type }} · {{ leave.from_date }} – {{
                   leave.to_date }}</p>
               </div>
@@ -654,12 +558,12 @@
           <div class="flex items-center justify-between gap-2">
             <div>
               <h2 class="text-base font-black">Holidays</h2>
-              <p class="mt-1 text-[10px] text-gray-600">Calendar holidays within selected dates</p>
+              <p class="mt-1 text-[10px] text-gray-600">Next 5 upcoming holidays</p>
             </div>
             <button class="text-xs font-bold text-[#C8499A]" @click="openRoute('/app/holiday-list')">View all ↗</button>
           </div>
           <div v-if="holidays.length" class="mt-3 divide-y divide-purple-50">
-            <div v-for="holiday in holidays.slice(0, 6)" :key="holiday.holiday_date + holiday.description"
+            <div v-for="holiday in holidays" :key="holiday.holiday_date + holiday.description"
               class="flex items-center gap-3 py-2">
               <div
                 class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-purple-50 text-xs font-black text-[#453D89]">
@@ -671,7 +575,7 @@
               </div>
             </div>
           </div>
-          <p v-else class="mt-3 text-xs text-gray-600">No holidays found in this range for the available holiday lists.
+          <p v-else class="mt-3 text-xs text-gray-600">No upcoming holidays found for the available holiday lists.
           </p>
         </article>
 
@@ -909,23 +813,23 @@ const roleDisplay = computed(() => {
   return "Administrator";
 });
 
-const heroTitle = computed(() => {
-  if (isEmployee.value) return "Your workday,";
-  if (isHR.value) return "People first.";
-  return "A better view of";
-});
+// const heroTitle = computed(() => {
+//   if (isEmployee.value) return "Your workday,";
+//   if (isHR.value) return "People first.";
+//   return "A better view of";
+// });
 
-const heroSubtitle = computed(() => {
-  if (isEmployee.value) return "at a glance.";
-  if (isHR.value) return "work made easier.";
-  return "your workforce.";
-});
+// const heroSubtitle = computed(() => {
+//   if (isEmployee.value) return "at a glance.";
+//   if (isHR.value) return "work made easier.";
+//   return "your workforce.";
+// });
 
-const heroDescription = computed(() => {
-  if (isEmployee.value) return "Your attendance, leave, and payroll in one place.";
-  if (isHR.value) return "Manage employee operations from one workspace.";
-  return "Your workforce overview and administrative tools.";
-});
+// const heroDescription = computed(() => {
+//   if (isEmployee.value) return "Your attendance, leave, and payroll in one place.";
+//   if (isHR.value) return "Manage employee operations from one workspace.";
+//   return "Your workforce overview and administrative tools.";
+// });
 
 const greeting = computed(() => {
   const hour = new Date().getHours();
@@ -1474,13 +1378,104 @@ async function loadShiftForRange(employeeId, start, end) {
   }
 }
 
+async function getHolidayListAssignments(filters = []) {
+  try {
+    return await getList("Holiday List Assignment", {
+      fields: ["name", "holiday_list", "assigned_to", "from_date"],
+      filters: [["docstatus", "=", 1], ...filters],
+      orderBy: "from_date desc",
+      limit: 1000,
+    });
+  } catch (error) {
+    console.warn("Could not load Holiday List Assignments:", error);
+    return [];
+  }
+}
+
+function stripHtml(value) {
+  if (!value) return "";
+  const element = document.createElement("div");
+  element.innerHTML = String(value);
+  return (element.textContent || "").replace(/\s+/g, " ").trim();
+}
+
+async function fetchUpcomingHolidays(listNames) {
+  const names = [...listNames];
+  const unique = new Map();
+
+  const responses = await Promise.allSettled(
+    names.map((listName) =>
+      frappeRequest(`/api/resource/Holiday%20List/${encodeURIComponent(listName)}`)
+    )
+  );
+
+  responses.forEach((result, index) => {
+    if (result.status === "rejected") {
+      console.warn(`Could not load holidays from ${names[index]}:`, result.reason);
+      return;
+    }
+
+    const rows = result.value.data?.holidays || [];
+    rows
+      .filter((holiday) => holiday.holiday_date && holiday.holiday_date >= todayISO)
+      .forEach((holiday) => {
+        const description = stripHtml(holiday.description);
+        const key = `${holiday.holiday_date}|${description}`;
+        if (!unique.has(key)) unique.set(key, { ...holiday, description });
+      });
+  });
+
+  return [...unique.values()]
+    .sort((a, b) => String(a.holiday_date).localeCompare(String(b.holiday_date)))
+    .slice(0, 5);
+}
+
+async function getAllHolidayListNames() {
+  try {
+    const lists = await getList("Holiday List", {
+      fields: ["name"],
+      limit: 100,
+    });
+    return lists.map((list) => list.name);
+  } catch (error) {
+    console.warn("Could not retrieve holiday lists from the backend:", error);
+    return [];
+  }
+}
+
 async function loadHolidays() {
   const holidayListNames = new Set();
 
-  if (employee.value.holiday_list) {
+  // Holiday lists assigned via Holiday List Assignment.
+  let assignments = [];
+  if (isEmployee.value) {
+    // Employees: prefer their own assignments, then fall back to the company's.
+    if (employee.value.name) {
+      assignments = await getHolidayListAssignments([
+        ["assigned_to", "=", employee.value.name],
+      ]);
+    }
+    if (!assignments.length && employee.value.company) {
+      assignments = await getHolidayListAssignments([
+        ["assigned_to", "=", employee.value.company],
+      ]);
+    }
+  } else {
+    // Admin/HR: use every submitted assignment.
+    assignments = await getHolidayListAssignments();
+  }
+
+  assignments.forEach((row) => {
+    if (row.holiday_list) holidayListNames.add(row.holiday_list);
+  });
+
+  // Legacy link on the Employee record.
+  if (!holidayListNames.size && employee.value.holiday_list) {
     holidayListNames.add(employee.value.holiday_list);
-  } else if (!isEmployee.value) {
-    // Admin/HR: gather holiday lists used by active employees.
+  }
+
+  if (!isEmployee.value) {
+    // Admin/HR: also gather holiday lists used by active employees.
     try {
       const employees = await getList("Employee", {
         fields: ["name", "holiday_list"],
@@ -1495,33 +1490,16 @@ async function loadHolidays() {
     }
   }
 
-  const unique = new Map();
+  holidays.value = await fetchUpcomingHolidays(holidayListNames);
 
-  for (const listName of holidayListNames) {
-    try {
-      const response = await frappeRequest(
-        `/api/resource/Holiday%20List/${encodeURIComponent(listName)}`
-      );
-      const rows = response.data?.holidays || [];
-
-      rows
-        .filter((holiday) =>
-          holiday.holiday_date &&
-          holiday.holiday_date >= startDate.value &&
-          holiday.holiday_date <= endDate.value
-        )
-        .forEach((holiday) => {
-          const key = `${holiday.holiday_date}|${holiday.description || ""}`;
-          if (!unique.has(key)) unique.set(key, holiday);
-        });
-    } catch (error) {
-      console.warn(`Could not load holidays from ${listName}:`, error);
+  // Always fall back to the Holiday Lists stored in the Frappe backend
+  // when the assigned lists are missing or have no upcoming holidays.
+  if (!holidays.value.length) {
+    const backendNames = await getAllHolidayListNames();
+    if (backendNames.length) {
+      holidays.value = await fetchUpcomingHolidays(backendNames);
     }
   }
-
-  holidays.value = [...unique.values()].sort((a, b) =>
-    String(a.holiday_date).localeCompare(String(b.holiday_date))
-  );
 }
 
 /* -------------------------------------------------------
