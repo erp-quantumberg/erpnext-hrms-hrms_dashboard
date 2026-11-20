@@ -88,9 +88,11 @@ database, login system, WhatsApp integration, or custom public API.
   when it has one.
 - While the notification panel is closed, the notification list refreshes once
   per minute.
+- Dashboard text follows the signed-in user's Frappe language setting and uses
+  Frappe's translation catalog.
 - The interface is responsive and its dashboard CSS is loaded inside a Shadow
   DOM to isolate it from Desk styles.
-- Dates and amounts are currently formatted for the `en-IN` locale and Indian
+- Dates and amounts use the current Frappe language locale and Indian
   rupees (₹).
 
 ## Technology
@@ -102,7 +104,7 @@ database, login system, WhatsApp integration, or custom public API.
 | UI components and Frappe integration | Frappe UI                                         |
 | Styling                              | Tailwind CSS and project CSS                      |
 | Charts package                       | ApexCharts and `vue3-apexcharts` are dependencies |
-| Backend platform                     | Frappe Framework and the HRMS app                 |
+| Backend platform                     | Frappe Framework, ERPNext, and Frappe HRMS        |
 | Frontend package manager             | npm (a `package-lock.json` is provided)           |
 
 Key frontend package versions are declared in `frontend/package.json` and
@@ -125,29 +127,34 @@ locked in `frontend/package-lock.json`:
 - Python 3.10 or later, as specified in `pyproject.toml`.
 - Node.js and npm for frontend development and asset generation. The repository
   CI workflow uses Node.js 18.
-- The Frappe HRMS app installed on the site before using HRMS records.
+- The following Frappe apps installed on the bench and site:
+  - Frappe Framework
+  - ERPNext
+  - Frappe HRMS
 - A signed-in Frappe user. To receive the employee workspace, the account must
   be linked to an Employee record through `Employee.user_id`.
 - Appropriate Frappe roles and DocType permissions for the records that the
   user is expected to see or create.
 
-This repository does not pin a specific Frappe or HRMS version in its package
-metadata. Confirm compatibility with the versions installed on your bench.
+This repository does not pin specific Frappe, ERPNext, or HRMS versions in its
+package metadata. Install versions that are compatible with one another and
+confirm compatibility with the versions on your bench.
 
 ## Installation
 
-### 1. Install HRMS
+### 1. Install the required Frappe apps
 
-Install the Frappe HRMS app on your bench and site if it is not already
-installed. Follow the installation instructions for the HRMS version used by
-your bench.
+Install Frappe Framework, ERPNext, and Frappe HRMS on your bench and site if
+they are not already installed. Frappe Framework is the platform prerequisite;
+install ERPNext and then HRMS using the instructions for versions compatible
+with your bench.
 
 ### 2. Fetch this app
 
 From the bench directory:
 
 ```bash
-bench get-app hrms_dashboard <REPOSITORY_URL>
+bench get-app https://github.com/erp-quantumberg/erpnext-hrms-hrms_dashboard.git
 ```
 
 Replace `<REPOSITORY_URL>` with the Git URL for this repository.

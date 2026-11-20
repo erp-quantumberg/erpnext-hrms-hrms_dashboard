@@ -74,6 +74,7 @@ function mountHRMSDashboard() {
     return false
   }
 
+  document.body.classList.add('hrms-dashboard-topbar')
   mountedMainSection = mainSection
   previousMainSectionPadding = mainSection.style.padding
 
@@ -256,6 +257,8 @@ function unmountHRMSDashboard() {
     mountedMainSection = null
     previousMainSectionPadding = ''
   }
+
+  document.body.classList.remove('hrms-dashboard-topbar')
 }
 
 

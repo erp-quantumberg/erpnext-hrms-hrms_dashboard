@@ -1,5 +1,200 @@
 <template>
   <main class="min-h-screen bg-[#f8f7fc] px-3 py-3 text-[#25213a] sm:px-5 lg:px-8">
+    <header
+      class="dashboard-topbar sticky top-0 z-30 -mx-3 -mt-3 mb-4 border-b border-[#e9e5f1] bg-white/95 px-3 py-2 shadow-sm backdrop-blur sm:-mx-5 sm:px-5 lg:-mx-8 lg:px-8">
+      <div class="flex min-h-10 items-center gap-2 sm:gap-3">
+        <div class="relative shrink-0">
+          <button type="button"
+            class="flex min-h-10 items-center gap-2 rounded-lg border border-[#e9e5f1] bg-white px-2.5 text-left hover:border-[#c9bddf] sm:px-3"
+            aria-haspopup="menu" :aria-expanded="workspaceMenuOpen" @click="workspaceMenuOpen = !workspaceMenuOpen">
+            <span class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-[#453D89] to-[#C8499A] text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+              </svg>
+            </span>
+            <span class="hidden min-w-0 sm:block">
+              <span class="block truncate text-xs font-bold text-[#25213a]">HR Setup</span>
+              <span class="block truncate text-[10px] text-gray-500">Frappe HR</span>
+            </span>
+            <svg class="hidden text-gray-500 sm:block" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+
+          <div v-if="workspaceMenuOpen"
+            class="absolute left-0 top-full z-50 mt-2 w-60 rounded-xl border border-[#e9e5f1] bg-white p-2 shadow-xl"
+            role="menu">
+            <p class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-500">{{ t("HRMS workspace") }}</p>
+            <button v-for="item in workspaceMenuItems" :key="item.href" type="button"
+              class="w-full rounded-lg px-3 py-2 text-left text-xs font-semibold hover:bg-purple-50"
+              role="menuitem" @click="openWorkspaceRoute(item.href)">{{ t(item.label) }}</button>
+            <p v-if="!workspaceMenuItems.length" class="px-3 py-2 text-xs text-gray-500">
+              {{ t("No HRMS navigation links are available.") }}
+            </p>
+          </div>
+        </div>
+
+        <button type="button"
+          class="hidden h-10 min-w-0 flex-1 items-center justify-between gap-3 rounded-lg border border-[#e9e5f1] bg-[#faf9fd] px-3 text-left text-xs text-gray-500 hover:border-[#c9bddf] sm:flex"
+          :aria-label="t('Open HRMS search')" @click="openGlobalSearch">
+          <span class="flex min-w-0 items-center gap-2 truncate">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-4-4" />
+            </svg>
+            {{ t("Search employees, records...") }}
+          </span>
+          <kbd class="shrink-0 rounded border border-[#e9e5f1] bg-white px-1.5 py-0.5 text-[10px]">Ctrl+K</kbd>
+        </button>
+        <button type="button"
+          class="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#e9e5f1] text-[#625c70] hover:bg-purple-50 hover:text-[#453D89] sm:hidden"
+          :aria-label="t('Open HRMS search')" @click="openGlobalSearch">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-4-4" />
+          </svg>
+        </button>
+
+        <div ref="languagePicker" class="relative flex shrink-0 items-center gap-1.5" @pointerdown.stop>
+          <label for="dashboard-language" class="sr-only sm:not-sr-only text-[10px] font-semibold text-gray-600">
+            {{ t("Language") }}
+          </label>
+          <button id="dashboard-language" ref="languagePickerButton" type="button" :disabled="languageSaving"
+            :aria-label="t('Language')" aria-haspopup="listbox" :aria-expanded="languagePickerOpen"
+            aria-controls="dashboard-language-options"
+            class="flex h-9 w-24 items-center justify-between gap-1 rounded-md border border-[#e9e5f1] bg-white px-2 text-[10px] text-[#25213a] disabled:opacity-60 sm:w-32 sm:text-xs"
+            @click="toggleLanguagePicker">
+            <span class="truncate">{{ selectedLanguageLabel }}</span>
+            <svg class="shrink-0 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+          <div v-if="languagePickerOpen"
+            class="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-[#e9e5f1] bg-white shadow-xl sm:w-64">
+            <div class="border-b border-[#eeeaf5] p-2">
+              <input ref="languageSearchInput" v-model="languageSearch" type="search"
+                :aria-label="t('Search languages')" :placeholder="t('Search languages...')"
+                class="h-9 w-full rounded-md border border-[#e9e5f1] px-3 text-xs text-[#25213a] outline-none focus:border-[#453D89]"
+                @keydown.esc="closeLanguagePicker(true)" />
+            </div>
+            <div id="dashboard-language-options" class="max-h-60 overflow-y-auto p-1" role="listbox"
+              :aria-label="t('Languages')">
+              <button v-for="language in filteredLanguages" :key="language.value" type="button" role="option"
+                :aria-selected="language.value === selectedLanguage"
+                class="block w-full truncate rounded-md px-3 py-2 text-left text-xs hover:bg-purple-50"
+                :class="language.value === selectedLanguage ? 'bg-purple-50 font-semibold text-[#453D89]' : 'text-[#25213a]'"
+                @click="selectLanguage(language.value)">
+                {{ language.label }}
+              </button>
+              <p v-if="!filteredLanguages.length" class="px-3 py-3 text-xs text-gray-500">
+                {{ t("No languages found.") }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative shrink-0">
+          <button type="button"
+            class="relative grid h-10 w-10 place-items-center rounded-lg text-[#625c70] hover:bg-purple-50 hover:text-[#453D89]"
+            :aria-label="t('Notifications')" :aria-expanded="notificationsOpen" @click="toggleNotifications">
+            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+              <path d="M10 21h4" />
+            </svg>
+            <span v-if="unreadCount"
+              class="absolute right-0.5 top-0.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#C8499A] px-1 text-[9px] font-bold text-white">
+              {{ unreadCount > 99 ? "99+" : unreadCount }}
+            </span>
+          </button>
+          <section v-if="notificationsOpen"
+            class="absolute right-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-[#e9e5f1] bg-white shadow-xl"
+            :aria-label="t('Notifications')">
+            <div class="flex items-center justify-between border-b border-[#eeeaf5] px-4 py-3">
+              <h2 class="text-sm font-bold">{{ t("Notifications") }}</h2>
+              <button v-if="unreadCount" type="button" class="text-[10px] font-bold text-[#453D89]"
+                @click="markAllNotificationsRead">{{ t("Mark all read") }}</button>
+            </div>
+            <div class="max-h-80 overflow-y-auto">
+              <p v-if="notificationsLoading" class="p-4 text-xs text-gray-500">{{ t("Loading notifications...") }}</p>
+              <p v-else-if="!notifications.length" class="p-4 text-xs text-gray-500">{{ t("No notifications to show.") }}</p>
+              <button v-for="notification in notifications" :key="notification.name" type="button"
+                class="block w-full border-b border-[#f2eff7] px-4 py-3 text-left last:border-0 hover:bg-[#faf9fd]"
+                @click="openNotification(notification)">
+                <span class="flex items-start gap-2">
+                  <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                    :class="isRead(notification) ? 'bg-gray-200' : 'bg-[#C8499A]'"></span>
+                  <span class="min-w-0">
+                    <strong class="block truncate text-xs">{{ notification.subject || t("Notification") }}</strong>
+                    <span class="mt-1 block text-[10px] leading-4 text-gray-600">{{ notificationMessage(notification) }}</span>
+                    <span class="mt-1 block text-[9px] text-gray-400">{{ notification.creation }}</span>
+                  </span>
+                </span>
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <div class="relative shrink-0">
+          <button type="button"
+            class="flex min-w-0 items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-purple-50"
+            :aria-label="t('Administrator menu')" aria-haspopup="menu" :aria-expanded="profileMenuOpen"
+            @click="profileMenuOpen = !profileMenuOpen">
+            <span class="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-[#faf4fc] text-[10px] font-bold text-[#453D89]">
+              <img v-if="userImage" :src="userImage" :alt="profileDisplayName" class="h-full w-full object-cover"
+                @error="userImage = ''" />
+              <span v-else>{{ profileInitials }}</span>
+            </span>
+            <span class="hidden max-w-24 truncate text-xs font-semibold sm:block">{{ profileDisplayName }}</span>
+            <svg class="hidden text-gray-500 sm:block" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+          <div v-if="profileMenuOpen"
+            class="absolute right-0 top-full z-50 mt-2 w-60 rounded-xl border border-[#e9e5f1] bg-white p-2 shadow-xl"
+            role="menu" :aria-label="t('Administrator options')">
+            <div class="border-b border-[#eeeaf5] px-3 py-2">
+              <p class="truncate text-xs font-bold text-[#25213a]">{{ profileDisplayName }}</p>
+              <p class="mt-1 truncate text-[10px] text-gray-500">{{ loggedUser }}</p>
+            </div>
+            <p v-if="languageSaving" class="px-3 py-2 text-[10px] text-gray-500">{{ t("Saving language...") }}</p>
+            <p v-if="languageError" class="px-3 py-2 text-[10px] text-red-600" role="alert">{{ languageError }}</p>
+            <button type="button"
+              class="w-full rounded-lg px-3 py-2.5 text-left text-xs font-semibold text-[#453D89] hover:bg-purple-50"
+              role="menuitem" @click="openUserProfile">{{ t("Profile") }}</button>
+            <button type="button"
+              class="w-full rounded-lg px-3 py-2.5 text-left text-xs font-semibold text-[#453D89] hover:bg-purple-50"
+              role="menuitem" @click="openHrSettings">{{ t("Settings") }}</button>
+            <button type="button"
+              class="w-full rounded-lg px-3 py-2.5 text-left text-xs font-semibold text-red-600 hover:bg-red-50"
+              role="menuitem" @click="signOut">{{ t("Sign out") }}</button>
+          </div>
+        </div>
+
+        <button v-if="!isEmployee" type="button"
+          class="hidden shrink-0 items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#453D89] to-[#C8499A] px-3 py-2 text-xs font-bold text-white shadow-sm hover:brightness-105 sm:flex"
+          @click="createEmployee">
+          <span class="text-base leading-none">+</span>
+          {{ t("New Employee") }}
+        </button>
+      </div>
+    </header>
 
     <!-- HERO -->
     <section
@@ -14,7 +209,7 @@
           </span>
 
           <h1 class="mt-3 text-2xl font-black leading-tight sm:text-3xl">
-            Good {{ greeting }} <span class="text-[#FFD8EF]">{{ displayName }}</span>
+            {{ t("Good") }} {{ greeting }} <span class="text-[#FFD8EF]">{{ displayName }}</span>
           </h1>
 
           <!-- <p class="mt-2 max-w-xl text-xs leading-5 text-white/80 sm:text-sm">
@@ -24,11 +219,11 @@
           <div class="mt-4 flex flex-wrap gap-2">
             <button class="rounded-lg bg-white px-4 py-2.5 text-xs font-extrabold text-[#453D89]"
               @click="openRoute(isEmployee ? '/app/attendance' : '/app/employee')">
-              {{ isEmployee ? "My Attendance" : "Employee Directory" }} ↗
+              {{ t(isEmployee ? "My Attendance" : "Employee Directory") }} ↗
             </button>
             <button class="rounded-lg border border-white/30 bg-white/10 px-4 py-2.5 text-xs font-bold text-white"
               @click="openRoute('/app/leave-application')">
-              {{ isEmployee ? "Request Leave" : "Leave Applications" }} ↗
+              {{ t(isEmployee ? "Request Leave" : "Leave Applications") }} ↗
             </button>
           </div>
         </div>
@@ -41,12 +236,12 @@
             <span v-else>{{ initials }}</span>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-[9px] font-bold uppercase tracking-widest text-[#C8499A]">Welcome back</p>
+            <p class="text-[9px] font-bold uppercase tracking-widest text-[#C8499A]">{{ t("Welcome back") }}</p>
             <h2 class="mt-1 truncate text-base font-black">{{ displayName }}</h2>
             <p class="mt-1 truncate text-xs text-gray-500">{{ employee.designation || roleDisplay }}</p>
             <p class="mt-1 truncate text-[10px] text-gray-600">{{ employee.name || loggedUser }}</p>
           </div>
-          <button class="shrink-0 text-xs font-bold text-[#C8499A]" @click="openRoute('/app/user')">Profile ↗</button>
+          <button class="shrink-0 text-xs font-bold text-[#C8499A]" @click="openRoute('/app/user')">{{ t("Profile") }} ↗</button>
         </div>
       </div>
 
@@ -61,7 +256,7 @@
     <div v-if="loading"
       class="mt-4 flex items-center gap-3 rounded-xl border border-purple-100 bg-white p-3 text-sm font-semibold text-[#453D89]">
       <span class="h-4 w-4 animate-spin rounded-full border-2 border-purple-200 border-t-[#453D89]"></span>
-      Loading dashboard...
+      {{ t("Loading dashboard...") }}
     </div>
 
     <!-- ERROR -->
@@ -70,7 +265,7 @@
       role="alert">
       <span>{{ errorMessage }}</span>
       <button class="rounded-lg bg-gradient-to-r from-[#453D89] to-[#C8499A] px-3 py-2 text-xs font-bold text-white"
-        @click="loadDashboard">Retry</button>
+        @click="loadDashboard">{{ t("Retry") }}</button>
     </div>
 
     <!-- GLOBAL DATE RANGE FILTER -->
@@ -81,17 +276,17 @@
         <!-- Title -->
         <div class="mr-auto min-w-fit">
           <h2 class="text-sm font-black text-[#25213a]">
-            Dashboard Date Filter
+            {{ t("Dashboard Date Filter") }}
           </h2>
           <p class="text-[10px] text-gray-600">
-            {{ filterApplied ? "Custom date range" : "Default: Today" }}
+            {{ t(filterApplied ? "Custom date range" : "Default: Today") }}
           </p>
         </div>
 
         <!-- Start Date -->
         <div class="flex items-center gap-2">
           <label for="dashboard-start-date" class="whitespace-nowrap text-xs font-bold text-gray-600">
-            From
+            {{ t("From") }}
           </label>
           <input id="dashboard-start-date" v-model="startDate" type="date"
             class="h-9 w-[145px] rounded-lg border border-purple-100 bg-[#faf9fd] px-2 text-xs font-semibold text-[#453D89] outline-none focus:border-[#C8499A]" />
@@ -100,7 +295,7 @@
         <!-- End Date -->
         <div class="flex items-center gap-2">
           <label for="dashboard-end-date" class="whitespace-nowrap text-xs font-bold text-gray-600">
-            To
+            {{ t("To") }}
           </label>
           <input id="dashboard-end-date" v-model="endDate" type="date"
             class="h-9 w-[145px] rounded-lg border border-purple-100 bg-[#faf9fd] px-2 text-xs font-semibold text-[#453D89] outline-none focus:border-[#C8499A]" />
@@ -110,14 +305,14 @@
         <button
           class="h-9 whitespace-nowrap rounded-lg bg-gradient-to-r from-[#453D89] to-[#C8499A] px-4 text-xs font-bold text-white disabled:opacity-50"
           :disabled="dateLoading || loading" @click="applyDateFilter">
-          {{ dateLoading ? "Applying..." : "Apply" }}
+          {{ t(dateLoading ? "Applying..." : "Apply") }}
         </button>
 
         <!-- Reset -->
         <button
           class="h-9 whitespace-nowrap rounded-lg border border-purple-100 px-3 text-xs font-bold text-[#453D89] hover:bg-purple-50 disabled:opacity-50"
           :disabled="dateLoading || loading" @click="resetDate">
-          Reset
+          {{ t("Reset") }}
         </button>
 
       </div>
@@ -128,8 +323,8 @@
       </p>
 
       <p class="mt-2 text-[10px] text-gray-600">
-        Showing records from
-        <strong>{{ formatDate(startDate) }}</strong> to
+        {{ t("Showing records from") }}
+        <strong>{{ formatDate(startDate) }}</strong> {{ t("to") }}
         <strong>{{ formatDate(endDate) }}</strong>.
       </p>
     </section>
@@ -150,14 +345,14 @@
         </transition>
 
         <div class="relative">
-          <p class="text-xs font-semibold text-white/75">{{ isCheckedIn ? "Checked in" : "Attendance" }}</p>
+          <p class="text-xs font-semibold text-white/75">{{ t(isCheckedIn ? "Checked in" : "Attendance") }}</p>
           <h2 class="mt-2 text-3xl font-black tracking-tight">
             {{ lastCheckin ? formatTime(lastCheckin.time) : "--:--" }}
           </h2>
           <p class="mt-1 text-xs text-white/80">
-            {{ isCheckedIn ? "Your attendance session is active." : "Record attendance using GPS." }}
+            {{ t(isCheckedIn ? "Your attendance session is active." : "Record attendance using GPS.") }}
           </p>
-          <p class="mt-1 text-[10px] text-white/70">Filter: {{ formatDate(startDate) }} – {{ formatDate(endDate) }}</p>
+          <p class="mt-1 text-[10px] text-white/70">{{ t("Filter") }}: {{ formatDate(startDate) }} – {{ formatDate(endDate) }}</p>
         </div>
 
         <div class="relative mt-5">
@@ -167,15 +362,15 @@
             @click="recordCheckin">
             <span v-if="checkinLoading || locationLoading"
               class="h-4 w-4 animate-spin rounded-full border-2 border-purple-200 border-t-[#453D89]"></span>
-            {{ locationLoading ? "Getting GPS location..." : checkinLoading ? "Saving attendance..." : isCheckedIn ?
-              "Check Out" : "Check In" }}
+            {{ t(locationLoading ? "Getting GPS location..." : checkinLoading ? "Saving attendance..." : isCheckedIn ?
+              "Check Out" : "Check In") }}
             <span v-if="!locationLoading && !checkinLoading">↗</span>
           </button>
           <p class="mt-2 text-center text-[10px] text-white/75">
-            ⌖ GPS is required. Actual current time is recorded.
+            ⌖ {{ t("GPS is required. Actual current time is recorded.") }}
           </p>
           <p v-if="!rangeIncludesToday" class="mt-1 text-center text-[10px] text-white/80">
-            Include today in the date range to record attendance.
+            {{ t("Include today in the date range to record attendance.") }}
           </p>
         </div>
       </article>
@@ -186,30 +381,30 @@
             <span
               class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-purple-50 text-lg text-[#453D89]">◷</span>
             <div>
-              <h3 class="text-sm font-extrabold">My Shift</h3>
-              <p class="mt-1 text-[10px] text-gray-600">Assignment overlapping the selected date range</p>
+              <h3 class="text-sm font-extrabold">{{ t("My Shift") }}</h3>
+              <p class="mt-1 text-[10px] text-gray-600">{{ t("Assignment overlapping the selected date range") }}</p>
             </div>
           </div>
-          <button class="shrink-0 text-xs font-bold text-[#C8499A]" @click="openRoute('/app/shift-assignment')">View
+          <button class="shrink-0 text-xs font-bold text-[#C8499A]" @click="openRoute('/app/shift-assignment')">{{ t("View") }}
             ↗</button>
         </div>
 
         <div v-if="currentShift" class="mt-4 flex flex-1 flex-col justify-center rounded-xl bg-[#faf8fd] p-4">
-          <h4 class="break-words text-xl font-black text-[#453D89]">{{ currentShift.shift_type || "Assigned Shift" }}
+          <h4 class="break-words text-xl font-black text-[#453D89]">{{ currentShift.shift_type || t("Assigned Shift") }}
           </h4>
           <p class="mt-2 text-sm font-bold text-gray-700">
             {{ formatTime(currentShift.start_time) }} – {{ formatTime(currentShift.end_time) }}
           </p>
           <p class="mt-2 text-[10px] text-gray-600">
-            {{ currentShift.start_date || "—" }} to {{ currentShift.end_date || "—" }}
+            {{ currentShift.start_date || "—" }} {{ t("to") }} {{ currentShift.end_date || "—" }}
           </p>
         </div>
         <div v-else class="mt-4 flex flex-1 items-center rounded-xl bg-[#faf8fd] p-4 text-xs text-gray-600">
-          No shift assignment found for the selected range.
+          {{ t("No shift assignment found for the selected range.") }}
         </div>
 
         <button class="mt-3 w-full rounded-lg border border-purple-100 px-3 py-2.5 text-xs font-bold text-[#453D89]"
-          @click="openRoute('/app/shift-assignment')">View Shift Assignments ↗</button>
+          @click="openRoute('/app/shift-assignment')">{{ t("View Shift Assignments") }} ↗</button>
       </article>
 
     </section>
@@ -220,28 +415,28 @@
 
         <!-- ATTENDANCE -->
         <article class="rounded-xl border border-[#eeeaf5] bg-white p-4 shadow-sm">
-          <CardHeading icon="◷" title="Attendance Summary" link-label="View ↗" @open="openRoute('/app/attendance')" />
+          <CardHeading icon="◷" :title="t('Attendance Summary')" :link-label="t('View') + ' ↗'" @open="openRoute('/app/attendance')" />
           <p class="mt-3 text-[10px] text-gray-600">{{ formatDate(startDate) }} – {{ formatDate(endDate) }}</p>
           <div class="mt-3 grid grid-cols-3 gap-2">
             <div class="rounded-lg bg-emerald-50 p-3 text-center">
               <strong class="block text-xl font-black text-emerald-700">{{ attendanceSummary.present }}</strong>
-              <span class="text-[10px] font-bold text-emerald-700">Present</span>
+              <span class="text-[10px] font-bold text-emerald-700">{{ t("Present") }}</span>
             </div>
             <div class="rounded-lg bg-red-50 p-3 text-center">
               <strong class="block text-xl font-black text-red-600">{{ attendanceSummary.absent }}</strong>
-              <span class="text-[10px] font-bold text-red-600">Absent</span>
+              <span class="text-[10px] font-bold text-red-600">{{ t("Absent") }}</span>
             </div>
             <div class="rounded-lg bg-purple-50 p-3 text-center">
               <strong class="block text-xl font-black text-[#453D89]">{{ attendanceSummary.half_day }}</strong>
-              <span class="text-[10px] font-bold text-[#453D89]">Half day</span>
+              <span class="text-[10px] font-bold text-[#453D89]">{{ t("Half day") }}</span>
             </div>
           </div>
-          <p class="mt-3 text-[10px] text-gray-600">{{ attendanceSummary.total }} attendance record(s)</p>
+          <p class="mt-3 text-[10px] text-gray-600">{{ attendanceSummary.total }} {{ t("attendance record(s)") }}</p>
         </article>
 
         <!-- CHECK-IN HISTORY -->
         <article class="rounded-xl border border-[#eeeaf5] bg-white p-4 shadow-sm">
-          <CardHeading icon="⌚" title="Check-in History" link-label="View ↗"
+          <CardHeading icon="⌚" :title="t('Check-in History')" :link-label="t('View') + ' ↗'"
             @open="openRoute('/app/employee-checkin')" />
           <div v-if="dateCheckins.length" class="mt-3 divide-y divide-purple-50">
             <div v-for="checkin in dateCheckins.slice(0, 5)" :key="checkin.name"
@@ -249,69 +444,69 @@
               <span class="flex items-center gap-2">
                 <span class="h-2 w-2 rounded-full"
                   :class="checkin.log_type === 'IN' ? 'bg-emerald-500' : 'bg-[#C8499A]'"></span>
-                <strong class="text-xs">{{ checkin.log_type === "IN" ? "Check In" : "Check Out" }}</strong>
+                <strong class="text-xs">{{ t(checkin.log_type === "IN" ? "Check In" : "Check Out") }}</strong>
               </span>
               <span class="text-xs font-bold text-[#453D89]">{{ formatDateTime(checkin.time) }}</span>
             </div>
           </div>
-          <p v-else class="mt-3 text-xs text-gray-600">No check-in records in this date range.</p>
-          <p v-if="dateCheckins.length > 5" class="mt-2 text-[10px] text-gray-600">Showing the first 5 records.</p>
+          <p v-else class="mt-3 text-xs text-gray-600">{{ t("No check-in records in this date range.") }}</p>
+          <p v-if="dateCheckins.length > 5" class="mt-2 text-[10px] text-gray-600">{{ t("Showing the first 5 records.") }}</p>
         </article>
 
         <!-- TASKS -->
         <article class="rounded-xl border border-[#eeeaf5] bg-white p-4 shadow-sm">
-          <CardHeading icon="☑" title="Assigned Tasks" link-label="View ↗" @open="openRoute('/app/todo')" />
+          <CardHeading icon="☑" :title="t('Assigned Tasks')" :link-label="t('View') + ' ↗'" @open="openRoute('/app/todo')" />
           <div v-if="employeeTasks.length" class="mt-3 divide-y divide-purple-50">
             <div v-for="task in employeeTasks.slice(0, 4)" :key="task.name" class="flex items-center gap-2 py-2">
               <span class="h-2 w-2 shrink-0 rounded-full bg-[#C8499A]"></span>
               <span class="min-w-0 flex-1 truncate text-xs text-gray-600">{{ task.description || task.name }}</span>
-              <span class="text-[10px] text-gray-600">{{ task.status || "Open" }}</span>
+              <span class="text-[10px] text-gray-600">{{ t(task.status || "Open") }}</span>
             </div>
           </div>
-          <p v-else class="mt-3 text-xs text-gray-600">No tasks found.</p>
+          <p v-else class="mt-3 text-xs text-gray-600">{{ t("No tasks found.") }}</p>
         </article>
 
         <!-- LEAVE APPLICATIONS AND ALLOCATIONS -->
         <article class="rounded-xl border border-[#eeeaf5] bg-white p-4 shadow-sm">
-          <CardHeading icon="▤" title="Leave Overview" link-label="View ↗"
+          <CardHeading icon="▤" :title="t('Leave Overview')" :link-label="t('View') + ' ↗'"
             @open="openRoute('/app/leave-application')" />
-          <p class="mt-3 text-[10px] font-bold text-gray-600">Leave applications in selected range</p>
+          <p class="mt-3 text-[10px] font-bold text-gray-600">{{ t("Leave applications in selected range") }}</p>
           <div v-if="leaveApplications.length" class="mt-2 divide-y divide-purple-50">
             <div v-for="leave in leaveApplications.slice(0, 4)" :key="leave.name" class="py-2">
               <div class="flex items-center justify-between gap-2">
-                <strong class="text-xs text-gray-700">{{ leave.leave_type || "Leave" }}</strong>
+                <strong class="text-xs text-gray-700">{{ leave.leave_type || t("Leave") }}</strong>
                 <span class="rounded-full bg-purple-50 px-2 py-1 text-[9px] font-bold text-[#453D89]">{{ leave.status ||
-                  "Pending" }}</span>
+                  t("Pending") }}</span>
               </div>
               <p class="mt-1 text-[10px] text-gray-600">{{ leave.from_date }} – {{ leave.to_date }}</p>
             </div>
           </div>
-          <p v-else class="mt-2 text-xs text-gray-600">No leave applications in this range.</p>
+          <p v-else class="mt-2 text-xs text-gray-600">{{ t("No leave applications in this range.") }}</p>
 
           <div class="mt-3 border-t border-purple-50 pt-3">
-            <p class="text-[10px] font-bold text-gray-600">Active leave allocations</p>
+            <p class="text-[10px] font-bold text-gray-600">{{ t("Active leave allocations") }}</p>
             <div v-if="leaveBalances.length" class="mt-2 grid grid-cols-2 gap-2">
               <div v-for="leave in leaveBalances.slice(0, 4)" :key="leave.name" class="rounded-lg bg-[#faf8fd] p-3">
                 <strong class="block text-lg font-black text-[#453D89]">{{ Number(leave.allocated ||
-                  0).toLocaleString("en-IN") }}</strong>
+                  0).toLocaleString(currentDateLocale()) }}</strong>
                 <span class="mt-1 block text-xs text-gray-600">{{ leave.leave_type }}</span>
               </div>
             </div>
-            <p v-else class="mt-2 text-xs text-gray-600">No allocation overlaps this range.</p>
+            <p v-else class="mt-2 text-xs text-gray-600">{{ t("No allocation overlaps this range.") }}</p>
           </div>
         </article>
 
         <!-- SALARY SLIPS -->
 
         <article class="rounded-xl border border-[#eeeaf5] bg-white p-4 shadow-sm">
-          <CardHeading icon="₹" title="Salary Slips" link-label="View ↗" @open="openRoute('/app/salary-slip')" />
+          <CardHeading icon="₹" :title="t('Salary Slips')" :link-label="t('View') + ' ↗'" @open="openRoute('/app/salary-slip')" />
 
           <div v-if="salarySlips.length" class="mt-3 divide-y divide-purple-50">
             <div v-for="slip in salarySlips.slice(0, 5)" :key="slip.name"
               class="flex items-center justify-between gap-3 py-3">
               <div class="min-w-0 flex-1">
                 <strong class="block break-all text-sm font-black text-[#453D89]">
-                  ₹{{ salaryVisible ? Number(slip.net_pay || 0).toLocaleString("en-IN") : "••••••" }}
+                  ₹{{ salaryVisible ? Number(slip.net_pay || 0).toLocaleString(currentDateLocale()) : "••••••" }}
                 </strong>
 
                 <p class="mt-1 text-[10px] text-gray-500">
@@ -326,7 +521,7 @@
               <div class="flex shrink-0 items-center gap-2">
                 <button class="rounded-md px-2 py-1 text-[10px] font-bold text-[#C8499A] hover:bg-pink-50"
                   @click="salaryVisible = !salaryVisible">
-                  {{ salaryVisible ? "Hide" : "Show" }}
+                  {{ t(salaryVisible ? "Hide" : "Show") }}
                 </button>
 
                 <button
@@ -340,14 +535,14 @@
           </div>
 
           <p v-else class="mt-3 text-xs text-gray-600">
-            No salary slips available.
+            {{ t("No salary slips available.") }}
           </p>
         </article>
 
         <!-- HOLIDAYS -->
         <article class="rounded-xl border border-[#eeeaf5] bg-white p-4 shadow-sm">
-          <CardHeading icon="♧" title="Holidays" link-label="View ↗" @open="openRoute('/app/holiday-list')" />
-          <p class="mt-3 text-[10px] text-gray-600">Next 5 upcoming holidays</p>
+          <CardHeading icon="♧" :title="t('Holidays')" :link-label="t('View') + ' ↗'" @open="openRoute('/app/holiday-list')" />
+          <p class="mt-3 text-[10px] text-gray-600">{{ t("Next 5 upcoming holidays") }}</p>
           <div v-if="holidays.length" class="mt-2 divide-y divide-purple-50">
             <div v-for="holiday in holidays" :key="holiday.holiday_date + holiday.description"
               class="flex items-center gap-3 py-2">
@@ -357,12 +552,12 @@
                 {{ datePart(holiday.holiday_date, "month") }}
               </div>
               <div class="min-w-0">
-                <strong class="block text-xs text-gray-700">{{ holiday.description || "Holiday" }}</strong>
+                <strong class="block text-xs text-gray-700">{{ holiday.description || t("Holiday") }}</strong>
                 <span class="text-[10px] text-gray-600">{{ formatDate(holiday.holiday_date) }}</span>
               </div>
             </div>
           </div>
-          <p v-else class="mt-3 text-xs text-gray-600">No upcoming holidays.</p>
+          <p v-else class="mt-3 text-xs text-gray-600">{{ t("No upcoming holidays.") }}</p>
         </article>
       </section>
     </template>
@@ -373,39 +568,39 @@
         <button class="rounded-xl border border-[#eeeaf5] bg-white p-4 text-left shadow-sm"
           @click="openRoute('/app/employee')">
           <span class="grid h-9 w-9 place-items-center rounded-lg bg-purple-50 text-lg text-[#453D89]">♙</span>
-          <strong class="mt-3 block text-sm font-extrabold">Employees</strong>
-          <small class="mt-1 block text-xs text-gray-600">{{ metrics.employees }} records</small>
+          <strong class="mt-3 block text-sm font-extrabold">{{ t("Employees") }}</strong>
+          <small class="mt-1 block text-xs text-gray-600">{{ metrics.employees }} {{ t("records") }}</small>
         </button>
         <button class="rounded-xl border border-[#eeeaf5] bg-white p-4 text-left shadow-sm"
           @click="openRoute('/app/leave-application')">
           <span class="grid h-9 w-9 place-items-center rounded-lg bg-pink-50 text-lg text-[#C8499A]">◷</span>
-          <strong class="mt-3 block text-sm font-extrabold">Leave Requests</strong>
-          <small class="mt-1 block text-xs text-gray-600">{{ metrics.pendingLeaves }} in range</small>
+          <strong class="mt-3 block text-sm font-extrabold">{{ t("Leave Requests") }}</strong>
+          <small class="mt-1 block text-xs text-gray-600">{{ metrics.pendingLeaves }} {{ t("in range") }}</small>
         </button>
         <button class="rounded-xl border border-[#eeeaf5] bg-white p-4 text-left shadow-sm"
           @click="openRoute('/app/attendance')">
           <span class="grid h-9 w-9 place-items-center rounded-lg bg-emerald-50 text-lg text-emerald-700">✓</span>
-          <strong class="mt-3 block text-sm font-extrabold">Attendance</strong>
-          <small class="mt-1 block text-xs text-gray-600">{{ metrics.attendanceRecords }} records</small>
+          <strong class="mt-3 block text-sm font-extrabold">{{ t("Attendance") }}</strong>
+          <small class="mt-1 block text-xs text-gray-600">{{ metrics.attendanceRecords }} {{ t("records") }}</small>
         </button>
         <button class="rounded-xl border border-[#eeeaf5] bg-white p-4 text-left shadow-sm"
           @click="openRoute('/app/salary-slip')">
           <span class="grid h-9 w-9 place-items-center rounded-lg bg-orange-50 text-lg text-orange-600">₹</span>
-          <strong class="mt-3 block text-sm font-extrabold">Payroll</strong>
-          <small class="mt-1 block text-xs text-gray-600">{{ metrics.salarySlips }} slips in range</small>
+          <strong class="mt-3 block text-sm font-extrabold">{{ t("Payroll") }}</strong>
+          <small class="mt-1 block text-xs text-gray-600">{{ metrics.salarySlips }} {{ t("slips in range") }}</small>
         </button>
       </section>
 
       <section class="mt-5">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p class="text-[9px] font-extrabold tracking-widest text-[#C8499A]">{{ isHR ? "HR OPERATIONS" :
-              "ADMINOVERVIEW" }}</p>
-            <h2 class="mt-1 text-xl font-black">Workforce Overview</h2>
+            <p class="text-[9px] font-extrabold tracking-widest text-[#C8499A]">{{ t(isHR ? "HR OPERATIONS" :
+              "ADMINOVERVIEW") }}</p>
+            <h2 class="mt-1 text-xl font-black">{{ t("Workforce Overview") }}</h2>
             <p class="mt-1 text-[10px] text-gray-600">{{ formatDate(startDate) }} – {{ formatDate(endDate) }}</p>
           </div>
           <button class="rounded-lg border border-purple-100 bg-white px-3 py-2 text-xs font-bold text-[#453D89]"
-            :disabled="loading || dateLoading" @click="loadDashboard">↻ Refresh</button>
+            :disabled="loading || dateLoading" @click="loadDashboard">↻ {{ t("Refresh") }}</button>
         </div>
 
         <div class="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
@@ -426,25 +621,24 @@
         <article class="rounded-xl border border-[#eeeaf5] bg-white p-4 shadow-sm">
           <div class="flex items-center justify-between gap-2">
             <div>
-              <h2 class="text-base font-black">Attendance Overview</h2>
+              <h2 class="text-base font-black">{{ t("Attendance Overview") }}</h2>
               <p class="mt-1 text-[10px] text-gray-600">{{ formatDate(startDate) }} – {{ formatDate(endDate) }}</p>
             </div>
-            <button class="text-xs font-bold text-[#C8499A]" @click="openRoute('/app/attendance')">View all ↗</button>
+            <button class="text-xs font-bold text-[#C8499A]" @click="openRoute('/app/attendance')">{{ t("View all") }} ↗</button>
           </div>
           <div class="mt-4 space-y-3">
-            <div class="flex items-center justify-between text-xs"><span>Present</span><strong>{{ metrics.present
+            <div class="flex items-center justify-between text-xs"><span>{{ t("Present") }}</span><strong>{{ metrics.present
             }}</strong></div>
-            <div class="flex items-center justify-between text-xs"><span>Absent</span><strong>{{ metrics.absent
+            <div class="flex items-center justify-between text-xs"><span>{{ t("Absent") }}</span><strong>{{ metrics.absent
             }}</strong></div>
-            <div class="flex items-center justify-between text-xs"><span>Other attendance records</span><strong>{{
+            <div class="flex items-center justify-between text-xs"><span>{{ t("Other attendance records") }}</span><strong>{{
               Math.max(0, metrics.attendanceRecords - metrics.present - metrics.absent) }}</strong></div>
           </div>
           <div class="mt-4 h-2 overflow-hidden rounded-full bg-purple-50">
             <div class="h-full rounded-full bg-gradient-to-r from-[#453D89] to-[#C8499A]"
               :style="{ width: attendancePercent + '%' }"></div>
           </div>
-          <p class="mt-2 text-[10px] text-gray-600">{{ attendancePercent }}% present against total employee count for
-            this range.</p>
+          <p class="mt-2 text-[10px] text-gray-600">{{ attendancePercent }}% {{ t("present against total employee count for this range.") }}</p>
         </article>
 
         <!-- HR ONLY: EMPLOYEE CHECK-IN / CHECK-OUT TABLE -->
@@ -452,7 +646,7 @@
 
           <div class="border-b border-purple-50 p-4">
             <h2 class="text-base font-black text-[#453D89]">
-              Employee Check-in / Check-out
+              {{ t("Employee Check-in / Check-out") }}
             </h2>
             <p class="mt-1 text-xs text-gray-600">
               {{ formatDate(startDate) }} – {{ formatDate(endDate) }}
@@ -463,9 +657,9 @@
             <table class="w-full min-w-[440px] text-left">
               <thead class="sticky top-0 z-10 bg-gradient-to-r from-[#453D89] to-[#C8499A] text-white">
                 <tr>
-                  <th class="px-4 py-3 text-xs">Employee Name</th>
-                  <th class="px-4 py-3 text-xs">Check In</th>
-                  <th class="px-4 py-3 text-xs">Check Out</th>
+                  <th class="px-4 py-3 text-xs">{{ t("Employee Name") }}</th>
+                  <th class="px-4 py-3 text-xs">{{ t("Check In") }}</th>
+                  <th class="px-4 py-3 text-xs">{{ t("Check Out") }}</th>
                 </tr>
               </thead>
 
@@ -494,7 +688,7 @@
 
                 <tr v-else-if="!adminEmployeeCheckins.length">
                   <td colspan="3" class="px-4 py-8 text-center text-xs text-gray-600">
-                    No employee check-in records found for this date range.
+                    {{ t("No employee check-in records found for this date range.") }}
                   </td>
                 </tr>
               </tbody>
@@ -506,40 +700,40 @@
         <article class="rounded-xl border border-[#eeeaf5] bg-white p-4 shadow-sm">
           <div class="flex items-center justify-between gap-2">
             <div>
-              <h2 class="text-base font-black">Leave Applications</h2>
-              <p class="mt-1 text-[10px] text-gray-600">Applications overlapping the selected range</p>
+              <h2 class="text-base font-black">{{ t("Leave Applications") }}</h2>
+              <p class="mt-1 text-[10px] text-gray-600">{{ t("Applications overlapping the selected range") }}</p>
             </div>
-            <button class="text-xs font-bold text-[#C8499A]" @click="openRoute('/app/leave-application')">View all
+            <button class="text-xs font-bold text-[#C8499A]" @click="openRoute('/app/leave-application')">{{ t("View all") }}
               ↗</button>
           </div>
           <div v-if="adminLeaveApplications.length" class="mt-3 divide-y divide-purple-50">
             <div v-for="leave in adminLeaveApplications.slice(0, 6)" :key="leave.name"
               class="flex items-center justify-between gap-3 py-2">
               <div class="min-w-0">
-                <strong class="block truncate text-xs">{{ leave.employee_name || leave.employee || "Employee"
+                <strong class="block truncate text-xs">{{ leave.employee_name || leave.employee || t("Employee")
                 }}</strong>
                 <p class="mt-1 text-[10px] text-gray-600">{{ leave.leave_type }} · {{ leave.from_date }} – {{
                   leave.to_date }}</p>
               </div>
               <span class="shrink-0 rounded-full bg-purple-50 px-2 py-1 text-[9px] font-bold text-[#453D89]">{{
-                leave.status || "Pending" }}</span>
+                t(leave.status || "Pending") }}</span>
             </div>
           </div>
-          <p v-else class="mt-3 text-xs text-gray-600">No leave applications overlap this range.</p>
+          <p v-else class="mt-3 text-xs text-gray-600">{{ t("No leave applications overlap this range.") }}</p>
         </article>
 
         <!-- PAYROLL SUMMARY -->
         <article class="rounded-xl border border-[#eeeaf5] bg-white p-4 shadow-sm">
           <div class="flex items-center justify-between gap-2">
             <div>
-              <h2 class="text-base font-black">Payroll Summary</h2>
-              <p class="mt-1 text-[10px] text-gray-600">Submitted salary slips overlapping the selected range</p>
+              <h2 class="text-base font-black">{{ t("Payroll Summary") }}</h2>
+              <p class="mt-1 text-[10px] text-gray-600">{{ t("Submitted salary slips overlapping the selected range") }}</p>
             </div>
-            <button class="text-xs font-bold text-[#C8499A]" @click="openRoute('/app/salary-slip')">View all ↗</button>
+            <button class="text-xs font-bold text-[#C8499A]" @click="openRoute('/app/salary-slip')">{{ t("View all") }} ↗</button>
           </div>
           <strong class="mt-4 block text-2xl font-black text-[#453D89]">₹{{ Number(metrics.payroll ||
-            0).toLocaleString("en-IN") }}</strong>
-          <p class="mt-1 text-xs text-gray-600">{{ metrics.salarySlips }} salary slips</p>
+            0).toLocaleString(currentDateLocale()) }}</strong>
+          <p class="mt-1 text-xs text-gray-600">{{ metrics.salarySlips }} {{ t("salary slips") }}</p>
           <div v-if="adminSalarySlips.length" class="mt-3 divide-y divide-purple-50">
             <div v-for="slip in adminSalarySlips.slice(0, 5)" :key="slip.name"
               class="flex items-center justify-between gap-2 py-2">
@@ -547,20 +741,20 @@
                 <strong class="block truncate text-xs">{{ slip.employee_name || slip.employee || slip.name }}</strong>
                 <p class="mt-1 text-[10px] text-gray-600">{{ slip.start_date }} – {{ slip.end_date }}</p>
               </div>
-              <strong class="text-xs text-[#453D89]">₹{{ Number(slip.net_pay || 0).toLocaleString("en-IN") }}</strong>
+              <strong class="text-xs text-[#453D89]">₹{{ Number(slip.net_pay || 0).toLocaleString(currentDateLocale()) }}</strong>
             </div>
           </div>
-          <p v-else class="mt-3 text-xs text-gray-600">No salary slips overlap this range.</p>
+          <p v-else class="mt-3 text-xs text-gray-600">{{ t("No salary slips overlap this range.") }}</p>
         </article>
 
         <!-- HOLIDAYS -->
         <article class="rounded-xl border border-[#eeeaf5] bg-white p-4 shadow-sm">
           <div class="flex items-center justify-between gap-2">
             <div>
-              <h2 class="text-base font-black">Holidays</h2>
-              <p class="mt-1 text-[10px] text-gray-600">Next 5 upcoming holidays</p>
+              <h2 class="text-base font-black">{{ t("Holidays") }}</h2>
+              <p class="mt-1 text-[10px] text-gray-600">{{ t("Next 5 upcoming holidays") }}</p>
             </div>
-            <button class="text-xs font-bold text-[#C8499A]" @click="openRoute('/app/holiday-list')">View all ↗</button>
+            <button class="text-xs font-bold text-[#C8499A]" @click="openRoute('/app/holiday-list')">{{ t("View all") }} ↗</button>
           </div>
           <div v-if="holidays.length" class="mt-3 divide-y divide-purple-50">
             <div v-for="holiday in holidays" :key="holiday.holiday_date + holiday.description"
@@ -570,12 +764,12 @@
                 {{ datePart(holiday.holiday_date, "day") }} {{ datePart(holiday.holiday_date, "month") }}
               </div>
               <div>
-                <strong class="block text-xs text-gray-700">{{ holiday.description || "Holiday" }}</strong>
+                <strong class="block text-xs text-gray-700">{{ holiday.description || t("Holiday") }}</strong>
                 <span class="text-[10px] text-gray-600">{{ formatDate(holiday.holiday_date) }}</span>
               </div>
             </div>
           </div>
-          <p v-else class="mt-3 text-xs text-gray-600">No upcoming holidays found for the available holiday lists.
+          <p v-else class="mt-3 text-xs text-gray-600">{{ t("No upcoming holidays found for the available holiday lists.") }}
           </p>
         </article>
 
@@ -584,13 +778,13 @@
           <!-- Header -->
           <div class="flex items-center justify-between gap-2">
             <div>
-              <h2 class="text-base font-black text-[#25213a]">Quick Links</h2>
+              <h2 class="text-base font-black text-[#25213a]">{{ t("Quick Links") }}</h2>
               <p class="mt-1 text-[10px] text-gray-600">
-                Access your HRMS tools quickly
+                {{ t("Access your HRMS tools quickly") }}
               </p>
             </div>
             <span class="rounded-full bg-purple-50 px-3 py-1 text-[10px] font-bold text-[#453D89]">
-              Shortcuts
+              {{ t("Shortcuts") }}
             </span>
           </div>
 
@@ -610,8 +804,8 @@
                 </svg>
               </span>
               <span class="min-w-0">
-                <strong class="block text-xs font-bold text-[#453D89]">Employees</strong>
-                <span class="mt-1 block text-[10px] text-gray-600">Employee directory</span>
+                <strong class="block text-xs font-bold text-[#453D89]">{{ t("Employees") }}</strong>
+                <span class="mt-1 block text-[10px] text-gray-600">{{ t("Employee directory") }}</span>
               </span>
             </button>
 
@@ -627,8 +821,8 @@
                 </svg>
               </span>
               <span class="min-w-0">
-                <strong class="block text-xs font-bold text-[#453D89]">Attendance</strong>
-                <span class="mt-1 block text-[10px] text-gray-600">Daily attendance</span>
+                <strong class="block text-xs font-bold text-[#453D89]">{{ t("Attendance") }}</strong>
+                <span class="mt-1 block text-[10px] text-gray-600">{{ t("Daily attendance") }}</span>
               </span>
             </button>
 
@@ -644,8 +838,8 @@
                 </svg>
               </span>
               <span class="min-w-0">
-                <strong class="block text-xs font-bold text-[#453D89]">Leave Requests</strong>
-                <span class="mt-1 block text-[10px] text-gray-600">Manage leave</span>
+                <strong class="block text-xs font-bold text-[#453D89]">{{ t("Leave Requests") }}</strong>
+                <span class="mt-1 block text-[10px] text-gray-600">{{ t("Manage leave") }}</span>
               </span>
             </button>
 
@@ -662,8 +856,8 @@
                 </svg>
               </span>
               <span class="min-w-0">
-                <strong class="block text-xs font-bold text-[#453D89]">Salary Slips</strong>
-                <span class="mt-1 block text-[10px] text-gray-600">Payroll records</span>
+                <strong class="block text-xs font-bold text-[#453D89]">{{ t("Salary Slips") }}</strong>
+                <span class="mt-1 block text-[10px] text-gray-600">{{ t("Payroll records") }}</span>
               </span>
             </button>
 
@@ -679,11 +873,20 @@
 import {
   ref,
   computed,
+  nextTick,
   onMounted,
   onBeforeUnmount,
   defineComponent,
   h,
 } from "vue";
+
+function t(text) {
+  return window.frappe?._ ? window.frappe._(text) : text;
+}
+
+function currentDateLocale() {
+  return window.frappe?.boot?.lang || navigator.language;
+}
 
 /* -------------------------------------------------------
    REUSABLE CARD HEADING
@@ -730,6 +933,7 @@ const attendanceMessageType = ref("success");
 let attendanceMessageTimer = null;
 
 const loggedUser = ref("");
+const userFullName = ref("");
 const userRoles = ref([]);
 const userImage = ref("");
 const employee = ref({});
@@ -746,6 +950,39 @@ const notifications = ref([]);
 const unreadCount = ref(0);
 const notificationsOpen = ref(false);
 const notificationsLoading = ref(false);
+const workspaceMenuOpen = ref(false);
+const workspaceMenuItems = ref([]);
+const profileMenuOpen = ref(false);
+const selectedLanguage = ref(window.frappe?.boot?.lang || "en");
+const languageSaving = ref(false);
+const languageError = ref("");
+const languagePicker = ref(null);
+const languagePickerButton = ref(null);
+const languageSearchInput = ref(null);
+const languagePickerOpen = ref(false);
+const languageSearch = ref("");
+const availableLanguages = computed(() => {
+  const languages = Object.entries(window.frappe?.boot?.lang_dict || {})
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  if (!languages.some((language) => language.value === selectedLanguage.value)) {
+    languages.push({ label: selectedLanguage.value, value: selectedLanguage.value });
+  }
+
+  return languages;
+});
+const selectedLanguageLabel = computed(() =>
+  availableLanguages.value.find((language) => language.value === selectedLanguage.value)?.label || selectedLanguage.value
+);
+const filteredLanguages = computed(() => {
+  const query = languageSearch.value.trim().toLocaleLowerCase();
+  if (!query) return availableLanguages.value;
+
+  return availableLanguages.value.filter(({ label, value }) =>
+    `${label} ${value}`.toLocaleLowerCase().includes(query)
+  );
+});
 
 const attendanceSummary = ref({
   present: 0,
@@ -797,20 +1034,28 @@ const displayName = computed(() =>
     : "there")
 );
 
+const profileDisplayName = computed(() =>
+  userFullName.value || displayName.value
+);
+
 const initials = computed(() =>
   String(displayName.value || "U").trim().slice(0, 1).toUpperCase()
 );
 
+const profileInitials = computed(() =>
+  String(profileDisplayName.value || "U").trim().slice(0, 1).toUpperCase()
+);
+
 const roleLabel = computed(() => {
-  if (isEmployee.value) return "EMPLOYEE WORKSPACE";
-  if (isHR.value) return "HUMAN RESOURCES WORKSPACE";
-  return "ADMINISTRATOR OVERVIEW";
+  if (isEmployee.value) return t("EMPLOYEE WORKSPACE");
+  if (isHR.value) return t("HUMAN RESOURCES WORKSPACE");
+  return t("ADMINISTRATOR OVERVIEW");
 });
 
 const roleDisplay = computed(() => {
-  if (isEmployee.value) return "Employee";
-  if (isHR.value) return "HR Workspace";
-  return "Administrator";
+  if (isEmployee.value) return t("Employee");
+  if (isHR.value) return t("HR Workspace");
+  return t("Administrator");
 });
 
 // const heroTitle = computed(() => {
@@ -833,13 +1078,13 @@ const roleDisplay = computed(() => {
 
 const greeting = computed(() => {
   const hour = new Date().getHours();
-  if (hour < 12) return "morning";
-  if (hour < 17) return "afternoon";
-  return "evening";
+  if (hour < 12) return t("morning");
+  if (hour < 17) return t("afternoon");
+  return t("evening");
 });
 
 const todayLabel = computed(() =>
-  new Date().toLocaleDateString("en-IN", {
+  new Date().toLocaleDateString(currentDateLocale(), {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -857,49 +1102,49 @@ const attendancePercent = computed(() =>
 
 const metricCards = computed(() => [
   {
-    label: "Total Employees",
+    label: t("Total Employees"),
     value: metrics.value.employees,
-    note: "Employee records",
+    note: t("Employee records"),
     icon: "♙",
     color: "bg-purple-50 text-[#453D89]",
     route: "/app/employee",
   },
   {
-    label: "Departments",
+    label: t("Departments"),
     value: metrics.value.departments,
-    note: "Organisation structure",
+    note: t("Organisation structure"),
     icon: "▦",
     color: "bg-pink-50 text-[#C8499A]",
     route: "/app/department",
   },
   {
-    label: "Present",
+    label: t("Present"),
     value: metrics.value.present,
-    note: "Selected date range",
+    note: t("Selected date range"),
     icon: "✓",
     color: "bg-emerald-50 text-emerald-700",
     route: "/app/attendance",
   },
   {
-    label: "Absent",
+    label: t("Absent"),
     value: metrics.value.absent,
-    note: "Selected date range",
+    note: t("Selected date range"),
     icon: "×",
     color: "bg-red-50 text-red-600",
     route: "/app/attendance",
   },
   {
-    label: "Leave Applications",
+    label: t("Leave Applications"),
     value: metrics.value.pendingLeaves,
-    note: "Overlapping selected range",
+    note: t("Overlapping selected range"),
     icon: "◷",
     color: "bg-orange-50 text-orange-600",
     route: "/app/leave-application",
   },
   {
-    label: "Submitted Payroll",
-    value: "₹" + Number(metrics.value.payroll || 0).toLocaleString("en-IN"),
-    note: `${metrics.value.salarySlips} slips in range`,
+    label: t("Submitted Payroll"),
+    value: "₹" + Number(metrics.value.payroll || 0).toLocaleString(currentDateLocale()),
+    note: `${metrics.value.salarySlips} ${t("slips in range")}`,
     icon: "₹",
     color: "bg-purple-50 text-[#453D89]",
     route: "/app/salary-slip",
@@ -918,7 +1163,7 @@ function formatDate(value) {
   if (!value) return "—";
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("en-IN", {
+  return date.toLocaleDateString(currentDateLocale(), {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -930,7 +1175,7 @@ function formatDateTime(value) {
   if (!value) return "";
   const date = new Date(String(value).replace(" ", "T"));
   if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleString("en-IN", {
+  return date.toLocaleString(currentDateLocale(), {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -947,7 +1192,7 @@ function formatTime(value) {
   const minutes = match[2];
   const suffix = hours >= 12 ? "PM" : "AM";
   hours = hours % 12 || 12;
-  return `${String(hours).padStart(2, "0")}:${minutes} ${suffix}`;
+  return `${String(hours).padStart(2, "0")}:${minutes} ${t(suffix)}`;
 }
 
 function datePart(value, part) {
@@ -956,23 +1201,150 @@ function datePart(value, part) {
   if (Number.isNaN(date.getTime())) return "—";
   return part === "day"
     ? date.getDate()
-    : date.toLocaleDateString("en-IN", { month: "short" }).toUpperCase();
+    : date.toLocaleDateString(currentDateLocale(), { month: "short" }).toUpperCase();
 }
 
 function openRoute(route) {
   if (route) window.location.href = route;
 }
 
+function loadWorkspaceMenu() {
+  const links = document.querySelectorAll(
+    ".body-sidebar-container .sidebar-items .standard-sidebar-item > a.item-anchor[href]"
+  );
+
+  workspaceMenuItems.value = Array.from(links)
+    .map((link) => ({
+      href: link.getAttribute("href"),
+      label: link.querySelector(".sidebar-item-label")?.textContent?.trim(),
+    }))
+    .filter((item) => item.href && item.label);
+}
+
+function openWorkspaceRoute(route) {
+  workspaceMenuOpen.value = false;
+  openRoute(route);
+}
+
+function openGlobalSearch() {
+  const searchButton = document.querySelector(
+    "#navbar-modal-search, #desktop-navbar-modal-search"
+  );
+
+  if (!searchButton) {
+    console.error("Frappe's global search control is not available.");
+    return;
+  }
+
+  searchButton.click();
+}
+
+function openUserProfile() {
+  profileMenuOpen.value = false;
+  if (typeof window.frappe?.set_route !== "function") {
+    console.error("Frappe routing is not available.");
+    return;
+  }
+
+  window.frappe.set_route("Form", "User", loggedUser.value);
+}
+
+function toggleLanguagePicker() {
+  if (languagePickerOpen.value) {
+    closeLanguagePicker();
+    return;
+  }
+
+  languagePickerOpen.value = true;
+  nextTick(() => languageSearchInput.value?.focus());
+}
+
+function closeLanguagePicker(returnFocus = false) {
+  languagePickerOpen.value = false;
+  languageSearch.value = "";
+  if (returnFocus) nextTick(() => languagePickerButton.value?.focus());
+}
+
+function handleLanguagePickerClickOutside(event) {
+  const picker = languagePicker.value;
+  if (languagePickerOpen.value && picker && !picker.contains(event.target)) {
+    closeLanguagePicker();
+  }
+}
+
+function selectLanguage(language) {
+  closeLanguagePicker();
+  changeLanguage(language);
+}
+
+async function changeLanguage(language) {
+  const currentLanguage = window.frappe?.boot?.lang || "en";
+  languageError.value = "";
+
+  if (language === currentLanguage) return;
+
+  selectedLanguage.value = language;
+  languageSaving.value = true;
+
+  try {
+    await frappeRequest("/api/method/frappe.client.set_value", {
+      method: "POST",
+      body: JSON.stringify({
+        doctype: "User",
+        name: loggedUser.value,
+        fieldname: "language",
+        value: language,
+      }),
+    });
+    window.location.reload();
+  } catch (error) {
+    console.error("Could not update dashboard language:", error);
+    selectedLanguage.value = currentLanguage;
+    languageError.value = t("Unable to update your language. Please try again.");
+  } finally {
+    languageSaving.value = false;
+  }
+}
+
+function openHrSettings() {
+  profileMenuOpen.value = false;
+  if (typeof window.frappe?.set_route !== "function") {
+    console.error("Frappe routing is not available.");
+    return;
+  }
+
+  window.frappe.set_route("Form", "HR Settings", "HR Settings");
+}
+
+function signOut() {
+  profileMenuOpen.value = false;
+  if (typeof window.frappe?.app?.logout !== "function") {
+    console.error("Frappe sign out is not available.");
+    return;
+  }
+
+  window.frappe.app.logout();
+}
+
+function createEmployee() {
+  if (typeof window.frappe?.new_doc !== "function") {
+    console.error("Frappe's new document action is not available.");
+    return;
+  }
+
+  window.frappe.new_doc("Employee");
+}
+
 function validateDateRange() {
   filterError.value = "";
 
   if (!startDate.value || !endDate.value) {
-    filterError.value = "Please select both a start date and an end date.";
+    filterError.value = t("Please select both a start date and an end date.");
     return false;
   }
 
   if (startDate.value > endDate.value) {
-    filterError.value = "Start date cannot be later than end date.";
+    filterError.value = t("Start date cannot be later than end date.");
     return false;
   }
 
@@ -1087,9 +1459,10 @@ async function getLoggedInUser() {
   loggedUser.value = response.message || "";
 
   if (!loggedUser.value || loggedUser.value === "Guest") {
-    throw new Error("Please log in to view your HRMS dashboard.");
+    throw new Error(t("Please log in to view your HRMS dashboard."));
   }
 
+  userFullName.value = "";
   userImage.value = "";
   employee.value = {};
   userRoles.value = [];
@@ -1099,6 +1472,7 @@ async function getLoggedInUser() {
     const userResponse = await frappeRequest(
       `/api/resource/User/${encodeURIComponent(loggedUser.value)}?fields=${fields}`
     );
+    userFullName.value = userResponse.data?.full_name || "";
     userImage.value = userResponse.data?.user_image || "";
   } catch (error) {
     console.warn("Could not load user profile:", error);
@@ -1142,7 +1516,7 @@ function isRead(notification) {
 
 function notificationMessage(notification) {
   const content = notification.email_content || notification.message || "";
-  if (!content) return "You have a new notification.";
+  if (!content) return t("You have a new notification.");
   const plain = String(content).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   return plain.length > 120 ? plain.slice(0, 117) + "..." : plain;
 }
@@ -1623,7 +1997,7 @@ async function loadAdminEmployeeCheckins() {
   } catch (error) {
     console.warn("Could not load employee check-in records:", error);
     adminEmployeeCheckins.value = [];
-    employeeCheckinError.value = "Could not load employee check-in records. Check your permissions and retry.";
+    employeeCheckinError.value = t("Could not load employee check-in records. Check your permissions and retry.");
   }
 }
 
@@ -1649,7 +2023,7 @@ async function applyDateFilter() {
     filterApplied.value = true;
   } catch (error) {
     console.error("Could not apply date range:", error);
-    errorMessage.value = error.message || "Unable to load data for this date range.";
+    errorMessage.value = error.message || t("Unable to load data for this date range.");
   } finally {
     dateLoading.value = false;
   }
@@ -1668,7 +2042,7 @@ async function resetDate() {
 function getCurrentLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error("Your browser does not support location access."));
+      reject(new Error(t("Your browser does not support location access.")));
       return;
     }
 
@@ -1678,7 +2052,7 @@ function getCurrentLocation() {
         const longitude = position.coords.longitude;
 
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-          reject(new Error("The browser returned invalid GPS coordinates."));
+          reject(new Error(t("The browser returned invalid GPS coordinates.")));
           return;
         }
 
@@ -1686,12 +2060,12 @@ function getCurrentLocation() {
       },
       (error) => {
         const messages = {
-          1: "Location permission denied. Allow location access in browser settings.",
-          2: "Your location is unavailable. Enable device location and try again.",
-          3: "The location request timed out. Please try again.",
+          1: t("Location permission denied. Allow location access in browser settings."),
+          2: t("Your location is unavailable. Enable device location and try again."),
+          3: t("The location request timed out. Please try again."),
         };
 
-        reject(new Error(messages[error.code] || "Could not access your current location."));
+        reject(new Error(messages[error.code] || t("Could not access your current location.")));
       },
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
@@ -1725,7 +2099,7 @@ async function recordCheckin() {
   ) return;
 
   if (!rangeIncludesToday.value) {
-    showAttendanceMessage("Include today in the date range to record attendance.", "error");
+    showAttendanceMessage(t("Include today in the date range to record attendance."), "error");
     return;
   }
 
@@ -1753,14 +2127,14 @@ async function recordCheckin() {
     });
 
     showAttendanceMessage(
-      `${logType === "IN" ? "Check-in" : "Check-out"} recorded successfully.`,
+      t(`${logType === "IN" ? "Check-in" : "Check-out"} recorded successfully.`),
       "success"
     );
 
     await loadEmployeeDashboard();
   } catch (error) {
     console.error("Attendance action failed:", error);
-    showAttendanceMessage(`Could not record ${actionLabel}: ${error.message}`, "error");
+    showAttendanceMessage(`${t("Could not record")} ${t(actionLabel)}: ${t(error.message)}`, "error");
   } finally {
     locationLoading.value = false;
     checkinLoading.value = false;
@@ -1795,14 +2169,16 @@ async function loadDashboard() {
     filterApplied.value = true;
   } catch (error) {
     console.error("HRMS dashboard error:", error);
-    errorMessage.value = error.message || "Unable to load the dashboard.";
+    errorMessage.value = error.message || t("Unable to load the dashboard.");
   } finally {
     loading.value = false;
   }
 }
 
 onMounted(() => {
+  loadWorkspaceMenu();
   loadDashboard();
+  document.addEventListener("pointerdown", handleLanguagePickerClickOutside);
 
   notificationTimer = setInterval(() => {
     if (!notificationsOpen.value) loadNotifications();
@@ -1812,6 +2188,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (attendanceMessageTimer) clearTimeout(attendanceMessageTimer);
   if (notificationTimer) clearInterval(notificationTimer);
+  document.removeEventListener("pointerdown", handleLanguagePickerClickOutside);
 });
 </script>
 
