@@ -1058,24 +1058,6 @@ const roleDisplay = computed(() => {
   return t("Administrator");
 });
 
-// const heroTitle = computed(() => {
-//   if (isEmployee.value) return "Your workday,";
-//   if (isHR.value) return "People first.";
-//   return "A better view of";
-// });
-
-// const heroSubtitle = computed(() => {
-//   if (isEmployee.value) return "at a glance.";
-//   if (isHR.value) return "work made easier.";
-//   return "your workforce.";
-// });
-
-// const heroDescription = computed(() => {
-//   if (isEmployee.value) return "Your attendance, leave, and payroll in one place.";
-//   if (isHR.value) return "Manage employee operations from one workspace.";
-//   return "Your workforce overview and administrative tools.";
-// });
-
 const greeting = computed(() => {
   const hour = new Date().getHours();
   if (hour < 12) return t("morning");
